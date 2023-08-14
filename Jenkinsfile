@@ -4,27 +4,42 @@ pipeline {
 
     agent any /*agent can define here,this case any agent */
 
-    stages {
-        stage('Build') {
+    stages{
+        stage('Build'){
             steps {
                 sh 'mvn clean package'
             }
             post {
                 success {
-                    echo 'Now Archiving ...'
-                    archiveArtifacts artifacts: '**/target/*.war'             
+                    echo 'Now Archiving...'
+                    archiveArtifacts artifacts: '**/target/*.war'
                 }
-            }    
+            }
         }
-
-        stage ('Deploy to Staging') {
+        stage ('Deploy to Staging'){
             steps {
-                build job: 'pipeline-Deploy-to-staging'
-
+                build job: 'deploy_to_staging'
             }
         }
 
+        stage ('Deploy to Production'){
+            steps{
+                timeout(time:5, unit:'DAYS'){
+                    input message:'Approve PRODUCTION Deployment?'
+                }
 
+                build job: 'deploy-to-prod'
+            }
+            post {
+                success {
+                    echo 'Code deployed to Production.'
+                }
+
+                failure {
+                    echo ' Deployment failed.'
+                }
+            }
+        }
 
 
     }
