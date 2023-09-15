@@ -15,7 +15,23 @@ pipeline {
                     archiveArtifacts artifacts: '**/target/*.war'
                 }
             }
+
+
+
+        stage ('SonarQube analysis'){
+            def mvnHome = tool name: 'maven-3', type: 'maven'
+            withSonarQubeEnv('Sonar') {
+                sh "${mvnHome}/bin/mvn sonar:sonar"
+            }
+            
         }
+        stage ('Email Notification'){
+            mail bcc: '',body: '''Hi welcome to jenkins email alerts
+            Thanks
+            Hari''', cc: '',from: '',replyTo:'', subject:'jenkins job' to:dammithar@gmil.com
+        }
+            
+        
         stage ('Deploy to Staging'){
             steps {
                 build job: 'deploy_to_staging'
